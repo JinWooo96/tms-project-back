@@ -1,0 +1,44 @@
+server:
+  port: 8081
+
+spring:
+  profiles:
+    active: local # 실행 시 application-local.yaml을 함께 읽어들임
+
+  application:
+    name: tms-project
+
+  jpa:
+    hibernate:
+      ddl-auto: update  # 개발 초기용 (운영에서는 사용 금지. 나중에 바꿀 것)ㅣ
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        default_batch_fetch_size: 100  # N+1 완화용 (초기 단계에서 성능 이슈를 줄여줌)
+    open-in-view: false     # OSIV 비활성화 (true면 컨트롤러까지 영속성 컨텍스트가 열려있어서 지연로딩 버그를 늦게 발견)
+
+  jackson:
+    time-zone: Asia/Seoul
+    date-format: yyyy-MM-dd'T'HH:mm:ss
+
+logging:
+  level:
+    root: info
+    org.hibernate.sql: debug
+    com.tmsproject: debug
+
+# application.yaml 최상단(spring: 블록과 같은 레벨)에 아래 내용을 추가하세요.
+# 키는 반드시 환경변수로 주입하고, 코드/설정파일에 직접 적어 넣지 마세요 (Git에 올라가면 안 됨).
+
+kakao:
+  base-url: https://dapi.kakao.com
+
+---
+# 실행 방법 1) 환경변수로 주입 (IntelliJ Run Configuration의 Environment variables에 추가)
+# KAKAO_API_KEY=발급받은_REST_API_키
+
+# 실행 방법 2) 로컬 전용 프로퍼티 파일 분리 (application-local.yaml, .gitignore 대상)
+#   kakao:
+#     api-key: 발급받은_REST_API_키
+#   위 파일을 만들고 application.yaml에 spring.profiles.active: local 추가

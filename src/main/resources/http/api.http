@@ -1,0 +1,59 @@
+### 개인 개발자가 빠르게 API 찍어볼 때 선호
+### 장점 : .http 파일이 텍스트 파일이라 Git으로 버전 관리가 가능
+### 코드 리뷰하듯 diff를 볼 수 있다.
+
+### 1. 운송주문 등록
+POST http://localhost:8081/api/orders
+Content-Type: application/json
+
+{
+  "originAddress": "서울시 강남구 테헤란로 123",
+  "originLat": 37.5012,
+  "originLng": 127.0396,
+  "destAddress": "부산시 해운대구 센텀중앙로 45",
+  "destLat": 35.1691,
+  "destLng": 129.1306,
+  "requestedPickupAt": "2026-08-01T09:00:00",
+  "requestedDeliveryAt": "2026-08-02T18:00:00",
+  "cargoList": [
+    {
+      "widthCm": 120,
+      "lengthCm": 100,
+      "heightCm": 150,
+      "weightKg": 350.5,
+      "quantity": 2,
+      "cargoType": "GENERAL"
+    }
+  ]
+}
+
+> {%
+    // 응답에서 id를 뽑아 orderId라는 전역 변수로 저장한다.
+    // 이렇게 저장해두면 아래 3번 요청에서 {{orderId}}로 바로 재사용할 수 있다.
+    client.test("주문 등록 성공(201)", function() {
+        client.assert(response.status === 201, "응답 상태코드가 201이 아닙니다.");
+    });
+
+    client.global.set("orderId", response.body.data.id);
+%}
+
+### 2. 운송주문 목록 조회 (RECEIVED 상태만, 1페이지 20건)
+GET http://localhost:8081/api/orders?status=RECEIVED&page=0&size=20
+
+> {%
+    client.test("목록 조회 성공(200)", function() {
+        client.assert(response.status === 200, "응답 상태코드가 200이 아닙니다.");
+    });
+%}
+
+### 3. 방금 등록한 주문 상세 조회
+GET http://localhost:8081/api/orders/{{orderId}}
+
+> {%
+    client.test("상세 조회 성공(200)", function() {
+        client.assert(response.status === 200, "응답 상태코드가 200이 아닙니다.");
+    });
+    client.test("화물 목록이 포함되어 있다", function() {
+        client.assert(response.body.data.cargoList.length > 0, "cargoList가 비어있습니다.");
+    });
+%}
