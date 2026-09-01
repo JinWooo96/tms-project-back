@@ -27,7 +27,10 @@ public enum ErrorCode {
 
     NO_PENDING_ORDERS(HttpStatus.NOT_FOUND, "미배차 주문을 찾을 수 없습니다."),
 
-    NO_AVAILABLE_VEHICLES(HttpStatus.NOT_FOUND, "배차 가능한 차량을 찾을 수 없습니다.");
+    NO_AVAILABLE_VEHICLES(HttpStatus.NOT_FOUND, "배차 가능한 차량을 찾을 수 없습니다."),
+
+    ROUTE_CALCULATION_FAILED(HttpStatus.INTERNAL_SERVER_ERROR, "경로 계산 중 오류가 발생했습니다."),
+    TIME_WINDOW_VIOLATED(HttpStatus.CONFLICT, "계산된 방문 순서로는 시간창을 지킬 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final String message;

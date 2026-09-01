@@ -23,4 +23,20 @@ public class KakaoClientConfig {
                 .defaultHeader("Authorization", "KakaoAK " + apiKey)
                 .build();
     }
+
+    /**
+     * v3 신규: 카카오 길찾기(Directions) API 전용 RestClient.
+     * 지오코딩(dapi.kakao.com)과 호스트가 다르므로 별도 빈으로 분리한다.
+     * API 키는 지오코딩과 동일한 카카오 REST API 키를 그대로 재사용한다.
+     */
+    @Bean
+    public RestClient kakaoDirectionsRestClient(
+            @Value("${kakao.api-key}") String apiKey,
+            @Value("${kakao.directions-base-url:https://apis-navi.kakaomobility.com}") String directionsBaseUrl
+    ) {
+        return RestClient.builder()
+                .baseUrl(directionsBaseUrl)
+                .defaultHeader("Authorization", "KakaoAK " + apiKey)
+                .build();
+    }
 }

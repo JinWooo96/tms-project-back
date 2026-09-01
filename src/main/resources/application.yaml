@@ -33,6 +33,7 @@ logging:
 
 kakao:
   base-url: https://dapi.kakao.com
+  directions-base-url: https://apis-navi.kakaomobility.com
 
 ---
 # 실행 방법 1) 환경변수로 주입 (IntelliJ Run Configuration의 Environment variables에 추가)

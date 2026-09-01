@@ -50,7 +50,7 @@ public class DispatchOptimizer {
         Map<AssignmentCandidate, BoolVar> varByCandidate = new LinkedHashMap<>();
         for (AssignmentCandidate candidate : candidates) {
             String varName = "x_order" + candidate.orderId() + "_vehicle" + candidate.vehicleId();
-            varByCandidate.put(candidate, model.newBoolVar(varName));
+            varByCandidate.put(candidate, model.newBoolVar(varName)); // 0 또는 1만 가질 수 있는 변수 (이 조합을 쓸 것인가 아닌가 예/아니오)
         }
 
         // 2. 제약조건 A: 각 주문은 최대 하나의 차량에만 배정된다.
@@ -65,7 +65,7 @@ public class DispatchOptimizer {
                     .toList();
             if (!varsForOrder.isEmpty()) {
                 // "이 변수들 중 최대 하나만 1이어야 한다."는 제약을 모델에 등록 (0개가 될 수도 있음. 그 주문이 아예 배정 안 될 수도 있기 때문)
-                model.addAtMostOne(varsForOrder.toArray(new Literal[0]));
+                model.addAtMostOne(varsForOrder.toArray(new Literal[0])); // 이 변수들 중 "최대" 1개만 찬다.
             }
         }
 
@@ -94,7 +94,7 @@ public class DispatchOptimizer {
         for (BoolVar var : varByCandidate.values()) {
             countObjective.addTerm(var, 1);
         }
-        model.maximize(countObjective);
+        model.maximize(countObjective); // 배정건수 최대화
 
         CpSolver countSolver = new CpSolver();
         countSolver.getParameters().setMaxTimeInSeconds(MAX_SOLVE_SECONDS);
@@ -108,14 +108,15 @@ public class DispatchOptimizer {
 
         // 5. [2단계] 1단계에서 구한 최대 배정 건수를 "정확히 이만큼은 배정해야 한다"는 제약으로 고정한 뒤,
         //    그 안에서 거리 합을 최소화하는 조합을 다시 찾는다.
-        model.addEquality(countObjective, maxAssignableCount);
+        // 배정건수를 고정하고 -> minimize 거리 최적화
+        model.addEquality(countObjective, maxAssignableCount); // 식의 값이 정확히 이것과 같아야 한다.
 
         LinearExprBuilder distanceObjective = LinearExpr.newBuilder();
         for (Map.Entry<AssignmentCandidate, BoolVar> entry : varByCandidate.entrySet()) {
             long scaledDistance = Math.round(entry.getKey().distanceKm() * DISTANCE_SCALE);
             distanceObjective.addTerm(entry.getValue(), scaledDistance);
         }
-        model.minimize(distanceObjective);
+        model.minimize(distanceObjective); // 거리합 최소화 (단일 목적함수)
 
         // 6. 실제 풀이 실행 (최대 5초, 그 안에서 찾은 최선의 답을 사용)
         // CpModel이 문제를 적는 도구였다면, CpSolver는 그 문제를 실제로 푸는 엔진

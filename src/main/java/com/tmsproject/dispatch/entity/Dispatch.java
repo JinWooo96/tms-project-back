@@ -37,6 +37,12 @@ public class Dispatch {
     @JoinColumn(name = "vehicle_id", nullable = false)
     private Vehicle vehicle;
 
+    // v3 신규: 이 배차가 속한 멀티드롭 경로. 수동 단건 배차는 NULL로 남는다.
+    // (DispatchRoute 쪽에서 dispatchList를 mappedBy로 참조하므로, 연관관계의 주인은 여기(Dispatch)다.)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "dispatch_route_id")
+    private DispatchRoute dispatchRoute;
+
     // 1차 범위에서는 기사 관리를 하지 않으므로 FK 매핑 없이 ID만 nullable로 보관 (추후 Driver 엔티티 생기면 연관관계로 교체)
     @Column(name = "driver_id")
     private Long driverId;
@@ -51,6 +57,10 @@ public class Dispatch {
 
     @Column(name = "assigned_at")
     private LocalDateTime assignedAt;
+
+    // v3 신규: 이 배차(주문)의 예상 도착(방문) 일시. 경로 확정 시 계산되어 저장된다.
+    @Column(name = "estimated_arrival_at")
+    private LocalDateTime estimatedArrivalAt;
 
     // 상속 받지 않고 직접 선언
     @CreatedDate
@@ -86,5 +96,38 @@ public class Dispatch {
         this.dispatchStatus = DispatchStatus.CANCELLED;
         this.transportOrder.revertToReceived();
         this.vehicle.markAsAvailable();
+    }
+
+    /**
+     * [v3 신규 - 경로 전용] 이 배차를 특정 경로(DispatchRoute)에 속한 배차로 확정한다.
+     *
+     * confirm()과의 차이: 여기서는 vehicle.markAsAssigned()를 호출하지 않는다.
+     * 멀티드롭 경로에서는 한 차량이 여러 주문(=여러 Dispatch)을 동시에 맡으므로,
+     * 차량 상태 변경은 개별 배차가 아니라 DispatchRoute가 "경로 전체에 대해 딱 한 번"만 책임진다.
+     * 이 메서드는 DispatchRoute.confirmWith() 내부에서만 호출된다.
+     *
+     * @param route               이 배차가 속하는 경로
+     * @param sequence            이 경로 안에서의 방문 순서 (1부터 시작)
+     * @param estimatedArrivalAt  계산된 예상 도착(방문) 일시
+     */
+    public void confirmWithinRoute(DispatchRoute route, int sequence, LocalDateTime estimatedArrivalAt) {
+        this.dispatchRoute = route;
+        this.sequence = sequence;
+        this.estimatedArrivalAt = estimatedArrivalAt;
+        this.dispatchStatus = DispatchStatus.CONFIRMED;
+        this.assignedAt = LocalDateTime.now();
+        this.transportOrder.markAsDispatched(); // 주문 상태 변경은 배차마다 각각 필요하다
+    }
+
+    /**
+     * [v3 신규 - 경로 전용] 이 배차를 경로 취소의 일부로 취소한다.
+     *
+     * cancel()과의 차이: 여기서는 vehicle.markAsAvailable()를 호출하지 않는다.
+     * 차량 상태 복구도 DispatchRoute가 경로 전체에 대해 한 번만 책임진다.
+     * 이 메서드는 DispatchRoute.cancel() 내부에서만 호출된다.
+     */
+    public void cancelWithinRoute() {
+        this.dispatchStatus = DispatchStatus.CANCELLED;
+        this.transportOrder.revertToReceived();
     }
 }
