@@ -15,6 +15,9 @@ public interface DispatchRepository extends JpaRepository<Dispatch, Long> {
     // 배차 확정 전 "이미 배차된 주문인지" 검증할 때 사용.
     Optional<Dispatch> findByTransportOrderIdAndDispatchStatus(Long transportOrderId, DispatchStatus dispatchStatus);
 
+    // 차량 삭제 전, 해당 차량의 배차 이력(취소 포함)이 있는지 확인한다. (vehicle.id 기준)
+    boolean existsByVehicleId(Long vehicleId);
+
     /**
      * 배차 단건 조회용 fetch join 쿼리 (transportOrder, vehicle까지 함께 로딩).
      *
