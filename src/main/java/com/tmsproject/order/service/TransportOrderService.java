@@ -2,6 +2,7 @@ package com.tmsproject.order.service;
 
 import com.tmsproject.global.exception.BusinessException;
 import com.tmsproject.global.exception.ErrorCode;
+import com.tmsproject.order.dto.response.OrderSummaryResponse;
 import com.tmsproject.order.entity.OrderStatus;
 import com.tmsproject.order.entity.TransportOrder;
 import com.tmsproject.order.repository.TransportOrderRepository;
@@ -43,6 +44,18 @@ public class TransportOrderService {
             return transportOrderRepository.findAll(pageable);
         }
         return transportOrderRepository.findByStatus(status, pageable);
+    }
+
+    /**
+     * 목록 화면용: 트랜잭션 안에서 DTO(총 중량/부피 포함)로 변환해서 반환한다.
+     * open-in-view=false 이므로 cargoList 접근(OrderSummaryResponse.from)을 반드시 여기서 끝내야 한다.
+     */
+    @Transactional(readOnly = true)
+    public Page<OrderSummaryResponse> getOrderSummaries(OrderStatus status, Pageable pageable) {
+        Page<TransportOrder> orders = (status == null)
+                ? transportOrderRepository.findAll(pageable)
+                : transportOrderRepository.findByStatus(status, pageable);
+        return orders.map(OrderSummaryResponse::from); // 트랜잭션 안에서 변환
     }
 
     /**
