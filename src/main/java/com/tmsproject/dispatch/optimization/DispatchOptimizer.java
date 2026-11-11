@@ -38,6 +38,7 @@ public class DispatchOptimizer {
     /** 솔버가 답을 찾는 데 허용할 최대 시간(초). 정해진 시간 안에서 찾은 최선의 답을 반환한다. */
     private static final double MAX_SOLVE_SECONDS = 5.0;
 
+    // 최적 조홥 찾기 solver
     public OptimizationResult solve(List<AssignmentCandidate> candidates,
                                     List<Long> orderIds,
                                     List<Long> vehicleIds) {
