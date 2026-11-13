@@ -29,6 +29,7 @@ public class TransportOrderService {
      */
     @Transactional
     public TransportOrder registerOrder(TransportOrder order) {
+        // orderNo는 서버가 생성
         String orderNo = generateOrderNo();
         order.assignOrderNo(orderNo);
 

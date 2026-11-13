@@ -42,6 +42,7 @@ public class TransportOrderController {
             @Valid @RequestBody CreateOrderRequest request) {
         log.info("createOrder... request : {}", request);
 
+        // 카카오 지오코딩 좌표 생성
         GeoPoint originPoint = geocodingService.geocode(request.originAddress());
         GeoPoint destPoint = geocodingService.geocode(request.destAddress());
 
