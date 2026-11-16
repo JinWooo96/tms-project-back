@@ -36,7 +36,8 @@ public class DispatchRoute {
     @Column(name = "route_status", nullable = false, length = 20)
     private RouteStatus routeStatus;
 
-    @Column(name = "total_distance_km")
+    // 총 이동거리(km). V1 스키마의 DECIMAL(8,2)와 정밀도를 일치시킨다. (최대 999,999.99KM)
+    @Column(name = "total_distance_km", precision = 8, scale = 2)
     private BigDecimal totalDistanceKm;
 
     @Column(name = "total_duration_min")

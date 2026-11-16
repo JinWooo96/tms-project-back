@@ -37,6 +37,11 @@ dependencies {
 
     // or-tools 의존성 추가
     implementation 'com.google.ortools:ortools-java:9.15.6755'
+
+    // Flyway: DB 스키마 버전 관리 (앱 시작 시 db/migration의 SQL을 순서대로 적용)
+    implementation 'org.springframework.boot:spring-boot-starter-flyway'
+    // Flyway의 MySQL/MariaDB 지원 모듈 (없으면 "Unsupported Database" 에러)
+    implementation 'org.flywaydb:flyway-mysql'
 }
 
 tasks.named('test') {

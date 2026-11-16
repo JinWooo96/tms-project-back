@@ -1,3 +1,5 @@
+-- ### 스키마와 시드는 이제 Flyway가 관리하므로 이 initdb는 사용하지 않는다. ###
+
 -- MariaDB dump 10.19-11.3.2-MariaDB, for Win64 (AMD64)
 --
 -- Host: localhost    Database: tms
