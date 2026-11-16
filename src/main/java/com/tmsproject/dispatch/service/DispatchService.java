@@ -124,19 +124,23 @@ public class DispatchService {
                 .collect(Collectors.toMap(Vehicle::getId, vehicle -> vehicle));
 
         List<AssignmentCandidate> candidates = new ArrayList<>();
-        // 주문을 순회하면서 후보를 만든다.
+        // 1. 주문을 순회하면서 후보를 만든다.
         for (TransportOrder order : targetOrders) {
             if (order.getOriginLat() == null || order.getOriginLng() == null) {
                 continue; // 좌표가 없는 주문은 거리 계산이 불가능하므로 후보에서 제외
             }
             for (Vehicle vehicle : availableVehicles) {
+                // 1-1. 주문 상차지 좌표 & 차량 차고지 좌표가 모두 있어야 한다.
                 if (vehicle.getBaseLat() == null || vehicle.getBaseLng() == null) {
                     continue;
                 }
+                // 1-2. canCarry(주문 총중량, 총부피)가 참이어야 한다.
+                // 즉, 이 주문 하나가 그 차량의 최대 중량과 적재함 부피에 들어가야 한다.
                 if (!vehicle.canCarry(order.totalWeight(), order.totalVolume())) {
                     continue; // 용량 초과 조합은 후보에서 제외 (v1로직 재사용)
                 }
-                // 직선 거리 계산
+                // 1-3. 후보마다 차량 차고지 -> 주문 상차지의 직선 거리(haversine)을 계산해서 붙인다.
+                // 도로 거리나 실제 소요 시간은 사용하지 않는다.
                 double distanceKm = DistanceCalculator.haversine(
                         vehicle.getBaseLat(), vehicle.getBaseLng(),
                         order.getOriginLat(), order.getOriginLng()
@@ -152,7 +156,7 @@ public class DispatchService {
                 : targetOrders.stream().map(TransportOrder::getId).toList();
         List<Long> vehicleIds = availableVehicles.stream().map(Vehicle::getId).toList();
 
-        // 배차 추천 로직 실행
+        // 2. 배차 추천 로직 실행
         OptimizationResult optimizationResult = dispatchOptimizer.solve(candidates, orderIds, vehicleIds);
 
         List<DispatchRecommendationResponse.Item> items = optimizationResult.assignments().stream()

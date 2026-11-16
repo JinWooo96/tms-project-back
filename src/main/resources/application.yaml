@@ -10,13 +10,18 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update  # 개발 초기용 (운영에서는 사용 금지. 나중에 바꿀 것)ㅣ
+      # ddl-auto: update  # 개발 초기용 (운영에서는 사용 금지. 나중에 바꿀 것)ㅣ
+      ddl-auto: validate  # 스키마는 Flyway로 관리. Hibernate는 엔티티와 테이블이 맞는지 검사만 한다.
     show-sql: true
     properties:
       hibernate:
         format_sql: true
         default_batch_fetch_size: 100  # N+1 완화용 (초기 단계에서 성능 이슈를 줄여줌)
     open-in-view: false     # OSIV 비활성화 (true면 컨트롤러까지 영속성 컨텍스트가 열려있어서 지연로딩 버그를 늦게 발견)
+
+  # Flyway: 앱 시작 시 아직 적용되지 않은 마이그레이션을 버전 순서대로 실행
+  flyway:
+    locations: classpath:db/migration  # 모든 환경 공통: 스키마만 적용.
 
   jackson:
     time-zone: Asia/Seoul

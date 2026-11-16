@@ -20,6 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.function.Function;
+
 @Slf4j
 @RestController
 @RequiredArgsConstructor
@@ -40,6 +42,7 @@ public class TransportOrderController {
             @Valid @RequestBody CreateOrderRequest request) {
         log.info("createOrder... request : {}", request);
 
+        // 카카오 지오코딩 좌표 생성
         GeoPoint originPoint = geocodingService.geocode(request.originAddress());
         GeoPoint destPoint = geocodingService.geocode(request.destAddress());
 
@@ -59,8 +62,9 @@ public class TransportOrderController {
             Pageable pageable) {
         log.info("getOrders... status : {}", status);
 
-        Page<TransportOrder> orders = transportOrderService.getOrders(status, pageable);
-        PageResponse<OrderSummaryResponse> response = PageResponse.of(orders, OrderSummaryResponse::from);
+        // 서비스에서 이미 DTO로 변환된 Page를 받는다. (매핑이 필요 없으므로 identity 함수 사용)
+        Page<OrderSummaryResponse> orders = transportOrderService.getOrderSummaries(status, pageable);
+        PageResponse<OrderSummaryResponse> response = PageResponse.of(orders, Function.identity());
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }

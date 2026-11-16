@@ -19,6 +19,8 @@ public enum ErrorCode {
     CAPACITY_EXCEEDED(HttpStatus.CONFLICT, "차량의 중량 또는 부피 조건을 초과했습니다."),
     DISPATCH_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 배차입니다."),
     DUPLICATE_VEHICLE_NO(HttpStatus.CONFLICT, "이미 등록된 차량번호입니다."),
+    VEHICLE_IN_USE(HttpStatus.CONFLICT, "배차 중인 차량은 삭제할 수 없습니다."),
+    VEHICLE_HAS_DISPATCH_HISTORY(HttpStatus.CONFLICT, "배차 이력이 있는 차량은 삭제할 수 없습니다."),
 
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),

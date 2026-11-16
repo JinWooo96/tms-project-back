@@ -71,4 +71,12 @@ public class VehicleController {
 
         return ResponseEntity.ok(ApiResponse.success(response));
     }
+
+    /** DELETE /api/vehicles/{vehicleId} - 차량 삭제 (API 명세서 2.3 추가 필요). 성공 시 본문 없이 204 */
+    @DeleteMapping("/api/vehicles/{vehicleId}")
+    public ResponseEntity<Void> deleteVehicle(@PathVariable Long vehicleId) {
+        vehicleService.deleteVehicle(vehicleId);
+
+        return ResponseEntity.noContent().build();
+    }
 }
