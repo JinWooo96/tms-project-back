@@ -21,6 +21,10 @@ public enum ErrorCode {
     DUPLICATE_VEHICLE_NO(HttpStatus.CONFLICT, "이미 등록된 차량번호입니다."),
     VEHICLE_IN_USE(HttpStatus.CONFLICT, "배차 중인 차량은 삭제할 수 없습니다."),
     VEHICLE_HAS_DISPATCH_HISTORY(HttpStatus.CONFLICT, "배차 이력이 있는 차량은 삭제할 수 없습니다."),
+    // v3: 경로에 속한 배차는 경로 단위로만 취소 가능 (차량 상태를 경로가 한 번만 책임지기 위함)
+    DISPATCH_IN_ROUTE(HttpStatus.CONFLICT, "경로에 속한 배차는 경로 단위로만 취소할 수 있습니다."),
+    // v3: 이미 취소된 경로를 다시 취소하는 경우 (다른 경로의 차량 상태가 잘못 복구되는 것을 방지)
+    ROUTE_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 배차경로입니다."),
 
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),
