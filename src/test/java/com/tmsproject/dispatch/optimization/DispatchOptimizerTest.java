@@ -131,6 +131,9 @@ public class DispatchOptimizerTest {
         assertThat(totalDistance(result)).isEqualTo(28.0);
     }
 
+    /**
+     * 건수가 거리보다 먼저이다.
+     */
     @Test
     @DisplayName("[사전식 목표] 거리가 늘어나더라도 배정 건수를 먼저 최대화한다")
     void maximizesCountBeforeDistance() {
