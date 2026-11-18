@@ -71,6 +71,7 @@ class DispatchTest {
                 .isEqualTo(ErrorCode.DISPATCH_ALREADY_CANCELLED);
     }
 
+    // 실패 이유 : 예외가 나지 않고 차량이 AVAILABLE로 바뀜
     @Test
     @DisplayName("[버그②] 경로에 속한 배차는 단건 취소할 수 없고, 차량 상태도 그대로 유지된다")
     void cancel_dispatchInRoute_throws() {

@@ -1,5 +1,7 @@
 package com.tmsproject.dispatch.entity;
 
+import com.tmsproject.global.exception.BusinessException;
+import com.tmsproject.global.exception.ErrorCode;
 import com.tmsproject.vehicle.entity.Vehicle;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -82,10 +84,27 @@ public class DispatchRoute {
      * (1차 범위에서는 경로 안 특정 배차만 취소하는 "부분 취소"는 지원하지 않는다.)
      */
     public void cancel() {
+        // 이미 취소된 경로를 다시 취소하면, 그 사이 같은 차량이 다른 경로에 배정된 경우
+        // 그 차량의 AVAILABLE로 잘못 되돌리게 된다. 상태 전이는 CONFIRMED -> CANCELLED 한 번만 허용한다.
+        if (this.routeStatus == RouteStatus.CANCELLED) {
+            throw new BusinessException(ErrorCode.ROUTE_ALREADY_CANCELLED);
+        }
         this.routeStatus = RouteStatus.CANCELLED;
         for (Dispatch dispatch : this.dispatchList) {
             dispatch.cancelWithinRoute();
         }
         this.vehicle.markAsAvailable(); // 차량 상태 복구도 경로 전체에 대해 딱 한 번만
     }
+
+    /**
+     * 경로 전체를 취소한다. 소속된 모든 배차를 함께 취소하고, 차량 상태를 원상복구한다.
+     * (1차 범위에서는 경로 안 특정 배차만 취소하는 "부분 취소"는 지원하지 않는다.)
+     */
+//    public void cancel() {
+//        this.routeStatus = RouteStatus.CANCELLED;
+//        for (Dispatch dispatch : this.dispatchList) {
+//            dispatch.cancelWithinRoute();
+//        }
+//        this.vehicle.markAsAvailable(); // 차량 상태 복구도 경로 전체에 대해 딱 한 번만
+//    }
 }

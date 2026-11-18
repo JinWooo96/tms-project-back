@@ -90,6 +90,12 @@ public class Dispatch {
      * 배차를 취소한다. 연관된 주문/차량 상태를 원상복구한다.
      */
     public void cancel() {
+        // [v3] 경로에 속한 배차는 단건 취소 불가.
+        // 경로의 다른 주문이 남아 있는데 여기서 차량을 AVAILABLE로 바꾸면 차량 상태가 틀어진다.
+        // 경로 소속 배차는 DispatchRoute.cancel()로만 취소한다. (부분 취소 미지원, D10)
+        if (this.dispatchRoute != null) {
+            throw new BusinessException(ErrorCode.DISPATCH_IN_ROUTE);
+        }
         if (this.dispatchStatus == DispatchStatus.CANCELLED) {
             throw new BusinessException(ErrorCode.DISPATCH_ALREADY_CANCELLED);
         }
