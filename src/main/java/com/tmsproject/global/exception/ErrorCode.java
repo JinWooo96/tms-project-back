@@ -25,6 +25,8 @@ public enum ErrorCode {
     DISPATCH_IN_ROUTE(HttpStatus.CONFLICT, "경로에 속한 배차는 경로 단위로만 취소할 수 있습니다."),
     // v3: 이미 취소된 경로를 다시 취소하는 경우 (다른 경로의 차량 상태가 잘못 복구되는 것을 방지)
     ROUTE_ALREADY_CANCELLED(HttpStatus.CONFLICT, "이미 취소된 배차경로입니다."),
+    // 낙관적 락 충돌: 같은 차량·주문을 다른 사용자가 먼저 변경한 경우 (화면에 그대로 노출되는 문구)
+    CONCURRENT_MODIFICATION(HttpStatus.CONFLICT, "다른 사용자가 먼저 변경했습니다. 새로고침 후 다시 시도해 주십시오."),
 
     VALIDATION_ERROR(HttpStatus.BAD_REQUEST, "요청 값이 올바르지 않습니다."),
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 내부 오류가 발생했습니다."),

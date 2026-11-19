@@ -3,6 +3,7 @@ package com.tmsproject.global.exception;
 import com.tmsproject.global.response.ApiResponse;
 import com.tmsproject.global.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -48,6 +49,21 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(ErrorCode.VALIDATION_ERROR.getHttpStatus())
                 .body(ApiResponse.failure(ErrorResponse.of(ErrorCode.VALIDATION_ERROR.name(), message)));
+    }
+
+    /**
+     * 낙관적 락 충돌 (@Version).
+     * 같은 차량·주문을 두 사용자가 동시에 변경하면, 나중에 커밋한 쪽에서
+     * JPA가 OptimisticLockException을 던지고 Spring이 OptimisticLockingFailureException으로 바꿔서 전달한다.
+     * 버그가 아니라 정상적인 경쟁 상황이므로 500이 아니라 409 + 재시도 안내로 응답한다.
+     */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(OptimisticLockingFailureException e) {
+        log.warn("OptimisticLock conflict : {}", e.getMessage());
+
+        return ResponseEntity
+                .status(ErrorCode.CONCURRENT_MODIFICATION.getHttpStatus())
+                .body(ApiResponse.failure(ErrorResponse.of(ErrorCode.CONCURRENT_MODIFICATION)));
     }
 
     /**

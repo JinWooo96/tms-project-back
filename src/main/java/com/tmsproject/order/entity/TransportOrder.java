@@ -65,6 +65,11 @@ public class TransportOrder extends BaseEntity {
     @Column(name = "status", nullable = false, length = 20)
     private OrderStatus status;
 
+    // 낙관적 락 버전. 같은 주문을 서로 다른 차량에 동시에 확정하는 것을 막는다.
+    @Version
+    @Column(name = "version", nullable = false)
+    private Long version;
+
     // OnToMany : TransportOrder 하나에 여러 Cargo가 연결된다. (1 : N) 관계 설정
     // mappedBy = "transportOrder" : 연관관계의 주인은 Cargo 쪽(FK를 가진 쪽)이라는 의미.
     // cascade = ALL : 주문을 저장/삭제하면 화물 리스트도 함께 저장/삭제된다.

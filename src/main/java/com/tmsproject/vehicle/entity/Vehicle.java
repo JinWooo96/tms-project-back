@@ -58,6 +58,13 @@ public class Vehicle {
     @Column(name = "status", nullable = false, length = 20)
     private VehicleStatus status;
 
+    // 낙관적 락 버전. JPA가 UPDATE할 때 "WHERE version = 읽었던 값" 조건을 붙이고 1씩 올린다.
+    // 0건이 변경되면(누군가 먼저 바꿨으면) OptimisticLockException → 트랜잭션 롤백.
+    // Long(래퍼 타입)인 이유: 새 엔티티는 null이어야 Spring Data가 "신규"로 판단해 persist한다.
+    @Version
+    @Column(name = "version", nullable = false, length = 20)
+    private Long version;
+
     @Builder(access = AccessLevel.PUBLIC)
     private Vehicle(String vehicleNo, String vehicleType, BigDecimal maxWeightKg,
                     Integer bedWidthCm, Integer bedLengthCm, Integer bedHeightCm,
