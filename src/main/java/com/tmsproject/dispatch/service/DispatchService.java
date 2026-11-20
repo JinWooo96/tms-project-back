@@ -61,6 +61,13 @@ public class DispatchService {
 
         dispatch.confirm(); // Dispatch/TransportOrder/Vehicle 세 엔티티 상태를 원자적으로 변경
 
+        // [데드락 방지] 차량·주문 UPDATE를 dispatch INSERT보다 먼저 DB에 보낸다.
+        // - IDENTITY 전략이라 save()는 INSERT를 즉시 실행하고, UPDATE는 원래 커밋 직전에 나간다.
+        // - INSERT dispatch는 외래키 검사로 vehicle 행에 공유(S) 락을 건다.
+        //   두 트랜잭션이 S 락을 쥔 채 UPDATE(X 락)를 시도하면 서로 기다리는 데드락이 된다.
+        // - UPDATE를 먼저 보내 X 락을 먼저 잡으면, 뒤의 트랜잭션은 대기 후 낙관적 락으로 실패한다.
+        dispatchRepository.flush();
+
         return dispatchRepository.save(dispatch);
     }
 

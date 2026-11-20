@@ -3,6 +3,7 @@ package com.tmsproject.global.exception;
 import com.tmsproject.global.response.ApiResponse;
 import com.tmsproject.global.response.ErrorResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.ConcurrencyFailureException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -57,9 +58,11 @@ public class GlobalExceptionHandler {
      * JPA가 OptimisticLockException을 던지고 Spring이 OptimisticLockingFailureException으로 바꿔서 전달한다.
      * 버그가 아니라 정상적인 경쟁 상황이므로 500이 아니라 409 + 재시도 안내로 응답한다.
      */
-    @ExceptionHandler(OptimisticLockingFailureException.class)
-    public ResponseEntity<ApiResponse<Void>> handleOptimisticLock(OptimisticLockingFailureException e) {
-        log.warn("OptimisticLock conflict : {}", e.getMessage());
+    // 낙관적 락 충돌 + 락 획득 실패(데드락 등)를 모두 "다른 사용자와의 경쟁"으로 보고 409로 응답한다.
+    // ConcurrencyFailureException이 두 예외의 공통 부모다.
+    @ExceptionHandler(ConcurrencyFailureException.class)
+    public ResponseEntity<ApiResponse<Void>> handleConcurrencyFailure(ConcurrencyFailureException e) {
+        log.warn("Concurrency conflict ({}): {}", e.getClass().getSimpleName(), e.getMessage());
 
         return ResponseEntity
                 .status(ErrorCode.CONCURRENT_MODIFICATION.getHttpStatus())
